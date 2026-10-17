@@ -8,13 +8,17 @@ import sys
 if len(sys.argv) != 2:
     raise SystemExit("Usage: python -m scripts.ingest_pdf <pdf_path>")
 
-pdf_path = str(Path(sys.argv[1]).expanduser().resolve())
+provided_path = sys.argv[1]
+pdf_path = str(Path(provided_path).expanduser().resolve())
 text_data = extract_pdf_text(pdf_path)
 chunks = chunk_text(text_data)
 
 with engine.begin() as conn:
     # Replace this file's old chunks atomically so reruns stay idempotent.
-    conn.execute(text("DELETE FROM documents WHERE source = :source"), {"source": pdf_path})
+    conn.execute(
+        text("DELETE FROM documents WHERE source IN (:source, :provided_source)"),
+        {"source": pdf_path, "provided_source": provided_path},
+    )
     for i, chunk in enumerate(chunks):
         embedding = embed_text(chunk)
         conn.execute(
