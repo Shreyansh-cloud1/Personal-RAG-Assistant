@@ -3,7 +3,7 @@ import requests
 
 st.title("RAG Knowledge Assistant")
 
-question = st.text_input("Ask a question")
+question = st.text_input("Ask a question, The Assistant will answer based on the ingested documents.")
 
 if st.button("Submit") and question:
     try:
