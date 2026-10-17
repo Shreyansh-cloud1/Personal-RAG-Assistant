@@ -6,16 +6,20 @@ st.title("RAG Knowledge Assistant")
 question = st.text_input("Ask a question")
 
 if st.button("Submit") and question:
-    response = requests.post(
-        "http://127.0.0.1:8000/chat",
-        json={"question": question},
-        timeout=300,
-    )
-    data = response.json()
+    try:
+        response = requests.post(
+            "http://127.0.0.1:8000/chat",
+            json={"question": question},
+            timeout=300,
+        )
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as exc:
+        st.error(f"The request failed: {exc}")
+    else:
+        st.subheader("Answer")
+        st.write(data["answer"])
 
-    st.subheader("Answer")
-    st.write(data["answer"])
-
-    st.subheader("Retrieved Sources")
-    for source in data["sources"]:
-        st.write(source)
+        st.subheader("Retrieved Sources")
+        for source in data["sources"]:
+            st.write(source)

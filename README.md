@@ -29,7 +29,7 @@ User Query --> Embedding Model --> PostgreSQL + pgvector --> Top-K Retrieval -->
 * **Upload PDF Documents** : The system reads PDF documents containing the knowledge base using  **PyMuPDF** .
 * **Extract Text** : Text is extracted from each page of the PDF and prepared for further processing.
 * **Split into Chunks**  : The extracted text is divided into smaller overlapping chunks using **RecursiveCharacterTextSplitter** to maintain context across chunks.
-* **Generate Embeddings** : Each text chunk is converted into a dense vector representation using the  **Sentence Transformer model (all-MiniLM-L6-v2)**.
+* **Generate Embeddings** : Each text chunk is converted into a dense vector representation using the **Sentence Transformer model (`BAAI/bge-small-en-v1.5`)**.
 * **Store in Vector Database** : The text chunks and their corresponding embeddings are stored in **PostgreSQL with pgvector** for efficient semantic search and retrieval.
 
 2. ***Question Answering Phase***

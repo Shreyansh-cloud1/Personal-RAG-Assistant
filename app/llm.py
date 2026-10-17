@@ -57,20 +57,7 @@ def generate_answer(context: str, question: str) -> str:
         {question}
     """
 
-    try:
-        # Send the prompt to the Gemini model
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt,
-        )
-
-        # Validate that text was returned
-        if not hasattr(response, "text") or not response.text:
-            return "No response was generated."
-
-        # Return the generated answer
-        return response.text.strip()
-
-    except Exception as e:
-        # Return a readable error message instead of crashing the API
-        return f"Error generating response: {str(e)}"
+    response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
+    if not hasattr(response, "text") or not response.text:
+        raise RuntimeError("The model returned an empty response.")
+    return response.text.strip()

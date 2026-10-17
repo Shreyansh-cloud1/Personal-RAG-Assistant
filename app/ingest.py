@@ -33,6 +33,7 @@ def extract_pdf_text(path):
 
 from sqlalchemy import text
 from app.db import engine
+from app.vector_utils import to_pgvector_literal
 
 def insert_chunk(source, chunk_index, content, embedding):
     with engine.begin() as conn:
@@ -48,13 +49,13 @@ def insert_chunk(source, chunk_index, content, embedding):
                     :source,
                     :chunk_index,
                     :content,
-                    :embedding
+                    CAST(:embedding AS vector)
                 )
             """),
             {
                 "source": source,
                 "chunk_index": chunk_index,
                 "content": content,
-                "embedding": embedding,
+                "embedding": to_pgvector_literal(embedding),
             },
         )
