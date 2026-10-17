@@ -32,9 +32,6 @@ def search(query_embedding, top_k=5):
     finally:
         conn.close()
 
-    MIN_SIMILARITY = 0.70
-    return [
-        (source, chunk_index, content, similarity)
-        for source, chunk_index, content, similarity in rows
-        if similarity >= MIN_SIMILARITY
-    ]
+    # Keep the nearest chunks in ranked order. A fixed cosine cutoff can drop
+    # answer-bearing chunks because BGE scores need calibration for each corpus.
+    return rows
