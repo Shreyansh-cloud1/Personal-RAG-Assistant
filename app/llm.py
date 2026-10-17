@@ -36,26 +36,26 @@ def generate_answer(context: str, question: str) -> str:
 
     # Build the prompt sent to Gemini
     prompt = f"""
-You are a document QA assistant.
+        You are a document QA assistant.
 
-Your job is to answer questions strictly from the provided context.
+        Your job is to answer questions strictly from the provided context.
 
-If the answer is not explicitly stated in the context, respond exactly:
+        If the answer is not explicitly stated in the context, respond exactly:
 
-I don't know based on the provided documents.
+        I don't know based on the provided documents.
 
-Do not:
-- use external knowledge
-- make assumptions
-- provide related information
-- explain nearby topics
+        Do not:
+        - use external knowledge
+        - make assumptions
+        - provide related information
+        - explain nearby topics
 
-Context:
-{context}
+        Context:
+        {context}
 
-Question:
-{question}
-"""
+        Question:
+        {question}
+    """
 
     try:
         # Send the prompt to the Gemini model

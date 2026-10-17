@@ -39,9 +39,7 @@ def search(query_embedding, top_k=5): # query_embeding (vector representation of
     MIN_SIMILARITY = 0.70
 
     filtered_rows = [
-        (content, similarity)
-        for content, similarity in rows
-        if similarity >= MIN_SIMILARITY
+        (content, similarity) for content, similarity in rows if similarity >= MIN_SIMILARITY
     ]
     
     cur.close() # Releases the cursor.
