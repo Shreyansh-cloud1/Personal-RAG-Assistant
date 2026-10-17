@@ -20,7 +20,7 @@ def search(query_embedding, top_k=5):
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT content,
+                SELECT source, chunk_index, content,
                        1 - (embedding <=> %s::vector) AS similarity
                 FROM documents
                 ORDER BY embedding <=> %s::vector

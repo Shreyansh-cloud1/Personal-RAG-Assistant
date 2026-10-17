@@ -22,4 +22,9 @@ if st.button("Submit") and question:
 
         st.subheader("Retrieved Sources")
         for source in data["sources"]:
-            st.write(source)
+            label = (
+                f"[{source['id']}] {source['source']} · chunk {source['chunk_index']} "
+                f"· similarity {source['similarity']:.3f}"
+            )
+            with st.expander(label):
+                st.write(source["content"])

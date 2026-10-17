@@ -3,8 +3,16 @@ from sentence_transformers import SentenceTransformer
 # model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
+QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
+
+
 def embed_text(text: str):
     return model.encode(text).tolist()
+
+
+def embed_query(question: str):
+    """Embed a search query using BGE's recommended retrieval instruction."""
+    return model.encode(QUERY_INSTRUCTION + question).tolist()
 
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter

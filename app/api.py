@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from app.ingest import embed_text
+from app.ingest import embed_query
 from app.retriever import search
 from app.llm import generate_answer
 
@@ -23,9 +23,12 @@ def chat(req: ChatRequest):
     if not question:
         raise HTTPException(status_code=422, detail="Question must not be empty.")
 
-    query_embedding = embed_text(question)
+    query_embedding = embed_query(question)
     results = search(query_embedding, top_k=5)
-    context = "\n\n".join([row[0] for row in results])
+    context = "\n\n".join(
+        f"[S{index}] Source: {source} (chunk {chunk_index})\n{content}"
+        for index, (source, chunk_index, content, _similarity) in enumerate(results, start=1)
+    )
     if not context:
         answer = "I don't know based on the provided documents."
     else:
@@ -37,5 +40,14 @@ def chat(req: ChatRequest):
     return {
         "question": question,
         "answer": answer,
-        "sources": [row[0][:200] for row in results],
+        "sources": [
+            {
+                "id": f"S{index}",
+                "source": source,
+                "chunk_index": chunk_index,
+                "similarity": round(float(similarity), 3),
+                "content": content,
+            }
+            for index, (source, chunk_index, content, similarity) in enumerate(results, start=1)
+        ],
     }
