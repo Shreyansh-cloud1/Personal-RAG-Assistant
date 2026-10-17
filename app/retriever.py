@@ -33,4 +33,8 @@ def search(query_embedding, top_k=5):
         conn.close()
 
     MIN_SIMILARITY = 0.70
-    return [(content, similarity) for content, similarity in rows if similarity >= MIN_SIMILARITY]
+    return [
+        (source, chunk_index, content, similarity)
+        for source, chunk_index, content, similarity in rows
+        if similarity >= MIN_SIMILARITY
+    ]
