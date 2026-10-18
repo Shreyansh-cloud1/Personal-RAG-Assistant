@@ -6,7 +6,7 @@ A Retrieval-Augmented Generation (RAG) assistant built with:
 - PostgreSQL + pgvector
 - Sentence Transformers
 - Google Gemini
-- Semantic Search
+- Hybrid semantic and keyword search
 
 ## Features
 
@@ -18,7 +18,7 @@ A Retrieval-Augmented Generation (RAG) assistant built with:
 
 ## Architecture
 
-User Query --> Embedding Model --> PostgreSQL + pgvector --> Top-K Retrieval --> Gemini LLM --> Answer Generation
+User Query --> BGE Embedding + PostgreSQL Full-Text Search --> Reciprocal Rank Fusion --> Gemini LLM --> Cited Answer
 
 ![1779572920456](image/README/1779572920456.png)
 
@@ -36,7 +36,7 @@ User Query --> Embedding Model --> PostgreSQL + pgvector --> Top-K Retrieval -->
 
 * **User Submits a Question** : The user enters a natural language query through the Streamlit/FastAPI interface.
 * **Generate Query Embedding** :The same embedding model converts the user's question into a vector representation.
-* **Perform Vector Similarity Search :** pgvector compares the query embedding against stored document embeddings and retrieves the most relevant document chunks based on semantic similarity.
+* **Perform Hybrid Search :** pgvector ranks passages by semantic similarity, while PostgreSQL full-text search matches query terms. Reciprocal Rank Fusion combines both rankings before the top chunks are sent to Gemini.
 * **Build Context-Aware Prompt** : The retrieved document chunks are combined with the user's question to construct a context-rich prompt for the LLM.
 * **Generate Response with Gemini** : The **Gemini LLM** processes the prompt and generates an answer grounded in the retrieved document context.
 * **Return Final Answer** : The generated answer, along with the retrieved supporting sources, is presented to the user through the application interface.
@@ -44,6 +44,10 @@ User Query --> Embedding Model --> PostgreSQL + pgvector --> Top-K Retrieval -->
 ## Run
 
 1. pip install -r requirements.txt
-2. python -m scripts.ingest_pdf data/sample.pdf
-3. uvicorn app.api:app --reload
-4. streamlit run ui/streamlit_app.py
+2. docker compose up -d
+3. python -m scripts.migrate_hybrid_search
+4. python -m scripts.ingest_pdf data/sample.pdf
+5. uvicorn app.api:app --reload
+6. streamlit run ui/streamlit_app.py
+
+The migration creates the full-text GIN index used by hybrid search. It is safe to run more than once and does not require re-ingesting documents. The PDF ingestion step replaces existing chunks for that file and refreshes their embeddings.

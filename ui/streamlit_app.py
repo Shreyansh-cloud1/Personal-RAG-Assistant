@@ -22,9 +22,14 @@ if st.button("Submit") and question:
 
         st.subheader("Retrieved Sources")
         for source in data["sources"]:
+            ranking = [f"RRF {source['hybrid_score']:.5f}"]
+            if source["vector_similarity"] is not None:
+                ranking.append(f"vector {source['vector_similarity']:.3f}")
+            if source["keyword_rank"] is not None:
+                ranking.append(f"keyword rank {source['keyword_rank']}")
             label = (
                 f"[{source['id']}] {source['source']} · chunk {source['chunk_index']} "
-                f"· similarity {source['similarity']:.3f}"
+                f"· {' · '.join(ranking)}"
             )
             with st.expander(label):
                 st.write(source["content"])

@@ -24,10 +24,10 @@ def chat(req: ChatRequest):
         raise HTTPException(status_code=422, detail="Question must not be empty.")
 
     query_embedding = embed_query(question)
-    results = search(query_embedding, top_k=5)
+    results = search(query_embedding, question, top_k=5)
     context = "\n\n".join(
-        f"[S{index}] Source: {source} (chunk {chunk_index})\n{content}"
-        for index, (source, chunk_index, content, _similarity) in enumerate(results, start=1)
+        f"[S{index}] Source: {result['source']} (chunk {result['chunk_index']})\n{result['content']}"
+        for index, result in enumerate(results, start=1)
     )
     if not context:
         answer = "I don't know based on the provided documents."
@@ -43,11 +43,18 @@ def chat(req: ChatRequest):
         "sources": [
             {
                 "id": f"S{index}",
-                "source": source,
-                "chunk_index": chunk_index,
-                "similarity": round(float(similarity), 3),
-                "content": content,
+                "source": result["source"],
+                "chunk_index": result["chunk_index"],
+                "hybrid_score": round(result["hybrid_score"], 5),
+                "vector_similarity": (
+                    round(result["vector_similarity"], 3)
+                    if result["vector_similarity"] is not None
+                    else None
+                ),
+                "semantic_rank": result["semantic_rank"],
+                "keyword_rank": result["keyword_rank"],
+                "content": result["content"],
             }
-            for index, (source, chunk_index, content, similarity) in enumerate(results, start=1)
+            for index, result in enumerate(results, start=1)
         ],
     }

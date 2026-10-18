@@ -12,3 +12,7 @@ CREATE INDEX IF NOT EXISTS idx_documents_embedding
 ON documents
 USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 100);
+
+CREATE INDEX IF NOT EXISTS idx_documents_content_fts
+ON documents
+USING GIN (to_tsvector('english', COALESCE(content, '')));
