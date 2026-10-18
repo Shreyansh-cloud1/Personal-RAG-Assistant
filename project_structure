@@ -1,17 +1,32 @@
-rag-knowledge-assistant/
-├── app/
-│   ├── api.py
-│   ├── config.py
-│   ├── db.py
-│   ├── ingest.py
-│   ├── retriever.py
-│   ├── llm.py
-│   └── schemas.py
-├── ui/
-│   └── streamlit_app.py
-├── data/
-│   └── sample.pdf
-├── requirements.txt
-├── docker-compose.yml
-├── init.sql
-└── .env
+rag-assistant/
+|-- app/
+|   |-- __init__.py
+|   |-- api.py                  # FastAPI chat and health endpoints
+|   |-- db.py                   # SQLAlchemy database engine
+|   |-- ingest.py               # PDF text extraction, chunking, embeddings
+|   |-- llm.py                  # Gemini answer generation and grounding prompt
+|   |-- retriever.py            # pgvector + full-text retrieval with RRF
+|   |-- vector_utils.py         # pgvector value formatting
+|   `-- test_gemini.py          # Gemini connectivity utility
+|-- data/
+|   `-- sample.pdf              # Sample technical knowledge base
+|-- docs/
+|   |-- render_architecture.py  # Rebuilds Architecture.png
+|   `-- troubleshooting-and-decisions.md
+|-- scripts/
+|   |-- __init__.py
+|   |-- ingest_pdf.py           # Ingest or replace a PDF's indexed chunks
+|   `-- migrate_hybrid_search.py # Adds the full-text GIN index to an existing DB
+|-- ui/
+|   `-- streamlit_app.py        # Streamlit question and source interface
+|-- Architecture.png           # Hybrid RAG architecture diagram
+|-- README.md
+|-- docker-compose.yml
+|-- init.sql                   # Fresh database schema and indexes
+|-- project_structure          # This file
+|-- requirements.txt
+|-- .env                       # Local application configuration
+`-- db_connect.txt             # Local database connection notes
+
+The virtual environment (`venv/`), Git metadata (`.git/`), and editor settings
+are intentionally omitted from this overview.
