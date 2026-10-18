@@ -13,14 +13,43 @@ A Retrieval-Augmented Generation (RAG) assistant built with:
 - PDF document ingestion
 - Recursive chunking
 - Embedding generation
-- Vector similarity search
+- Hybrid semantic and keyword retrieval with Reciprocal Rank Fusion
 - Context-aware question answering
 
 ## Architecture
 
-User Query --> BGE Embedding + PostgreSQL Full-Text Search --> Reciprocal Rank Fusion --> Gemini LLM --> Cited Answer
+```mermaid
+flowchart TD
+    subgraph Ingestion[Document ingestion]
+        PDF[PDF documents] --> Extract[Extract and chunk text]
+        Extract --> EmbedChunks[Generate BGE chunk embeddings]
+        Extract --> StoreText[Store chunk text and source metadata]
+        EmbedChunks --> DB[(PostgreSQL + pgvector)]
+        StoreText --> DB
+        DB --- VectorIndex[Vector index]
+        DB --- TextIndex[English full-text GIN index]
+    end
 
-![1779572920456](image/README/1779572920456.png)
+    subgraph Query[Question answering]
+        User[User question] --> Interface[Streamlit UI]
+        Interface --> API[FastAPI /chat]
+        API --> EmbedQuery[Embed question with BGE query instruction]
+        EmbedQuery --> Semantic[Semantic candidate ranking]
+        API --> Keywords[PostgreSQL full-text candidate ranking]
+        DB --> Semantic
+        DB --> Keywords
+        Semantic --> RRF[Reciprocal Rank Fusion, k = 60]
+        Keywords --> RRF
+        RRF --> Context[Top passages with source labels]
+        Context --> Gemini[Gemini answer grounded in context]
+        Gemini --> Response[Answer and ranked source details]
+        Response --> Interface
+    end
+```
+
+The vector and full-text branches search the same stored chunks independently. Reciprocal Rank Fusion combines their rankings before the top passages are sent to Gemini. The GIN index supports keyword retrieval; the vector index supports semantic retrieval.
+
+PNG diagram: [Architecture.png](Architecture.png). Its source can be regenerated with `python docs/render_architecture.py`.
 
 ## Workflow:
 
@@ -35,8 +64,8 @@ User Query --> BGE Embedding + PostgreSQL Full-Text Search --> Reciprocal Rank F
 2. ***Question Answering Phase***
 
 * **User Submits a Question** : The user enters a natural language query through the Streamlit/FastAPI interface.
-* **Generate Query Embedding** :The same embedding model converts the user's question into a vector representation.
-* **Perform Hybrid Search :** pgvector ranks passages by semantic similarity, while PostgreSQL full-text search matches query terms. Reciprocal Rank Fusion combines both rankings before the top chunks are sent to Gemini.
+* **Generate Query Embedding** : The BGE model converts the user's question using its recommended query instruction.
+* **Perform Hybrid Search** : pgvector ranks passages by semantic similarity, while PostgreSQL full-text search matches query terms. Reciprocal Rank Fusion (`k = 60`) combines both rankings before the top chunks are sent to Gemini.
 * **Build Context-Aware Prompt** : The retrieved document chunks are combined with the user's question to construct a context-rich prompt for the LLM.
 * **Generate Response with Gemini** : The **Gemini LLM** processes the prompt and generates an answer grounded in the retrieved document context.
 * **Return Final Answer** : The generated answer, along with the retrieved supporting sources, is presented to the user through the application interface.
